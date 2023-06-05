@@ -1,21 +1,21 @@
 version: '3'
-# Define services
 services:
-  # App Services
   web:
     build:
       context: ./web
       dockerfile: Dockerfile
+      target: ${FRONTEND_BUILD_TARGET:-dev} # use "prod" for production
     ports:
       - "5000:80"
+    environment:
+      BASE_API_URL: ${BACKEND_URL:-http://localhost:8080}
     depends_on:
       - api
   api:
-    # Configuration for building the docker image for the service
     build:
-      # Use an image built from the specified dockerfile in the current directory.
       context: .
       dockerfile: Dockerfile
+      target: ${BACKEND_BUILD_TARGET:-dev} # use "prod" for production
     environment:
       - MONGO_URL=mongodb://mongo:27017
       - MONGO_TODO_DB=TodoDb
@@ -28,7 +28,7 @@ services:
       - JAEGER_SERVICE_NAME=go-todo-app
       - GIN_MODE=debug
     ports:
-      - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+      - "8080:8080"
     restart: unless-stopped
     depends_on:
       - mongo
