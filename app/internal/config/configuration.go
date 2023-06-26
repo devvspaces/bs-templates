@@ -9,11 +9,14 @@ import (
 )
 
 var (
-	//MongoConfig provides mongodb connection info
+	// MongoConfig provides mongodb connection info
 	MongoConfig MongoConfiguration
 
-	//RedisConfig provides mongodb connection info
+	// RedisConfig provides mongodb connection info
 	RedisConfig RedisConfiguration
+
+	// AppConfig stores application configuration
+	AppConfig AppConfiguration
 )
 
 func init() {
@@ -24,8 +27,9 @@ func init() {
 	}
 }
 
-//Load initialize environment variables
+// Load initialize environment variables
 func Load() {
 	_ = env.Parse(&RedisConfig)
 	_ = env.Parse(&MongoConfig)
+	_ = env.Parse(&AppConfig)
 }

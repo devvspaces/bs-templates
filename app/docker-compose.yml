@@ -6,9 +6,9 @@ services:
       dockerfile: Dockerfile
       target: ${FRONTEND_BUILD_TARGET:-dev} # use "prod" for production
     ports:
-      - "5000:80"
+      - "8080:8080"
     environment:
-      BASE_API_URL: ${BACKEND_URL:-http://localhost:8080}
+      API_URL: ${BACKEND_URL:-http://localhost:3080}
     depends_on:
       - api
   api:
@@ -27,8 +27,9 @@ services:
       - JAEGER_SAMPLER_TYPE=probabilistic
       - JAEGER_SERVICE_NAME=go-todo-app
       - GIN_MODE=debug
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:8080}
     ports:
-      - "8080:8080"
+      - "3080:8080"
     restart: unless-stopped
     depends_on:
       - mongo
@@ -37,9 +38,14 @@ services:
     image: mongo:3
     ports:
       - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
       - "6831:6831/udp"
       - "5775:5775/udp"
       - "16686:16686"
+
+volumes:
+  mongo_data:

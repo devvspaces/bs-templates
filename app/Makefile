@@ -30,14 +30,28 @@ wire-mongo:
 wire-redis:
 	wire ./internal/wired/redis.go
 
+build:
+	go build -o ./todoapi ./cmd/api
+
+run:
+	make build
+	./todoapi
+
+clean:
+	rm -rf ./todoapi
+
 docker-mongo-start:
-	docker-compose up --build
+	BACKEND_URL=http://localhost:3080 \
+	FRONTEND_URL=http://localhost:8080 \
+	FRONTEND_BUILD_TARGET=prod \
+	BACKEND_BUILD_TARGET=prod \
+	docker-compose up --build -d
 
 docker-mongo-stop:
 	docker-compose down
 
 docker-redis-start:
-	docker-compose -f ./docker-compose.redis.yml up --build
+	docker-compose -f ./docker-compose.redis.yml up --build -d
 
 docker-redis-stop:
 	docker-compose -f ./docker-compose.redis.yml down

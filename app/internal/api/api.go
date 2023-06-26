@@ -10,7 +10,7 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
-//AppServer application runtime
+// AppServer application runtime
 type AppServer struct {
 	Close func() error
 	Start func() error
@@ -33,15 +33,25 @@ func registerHandlers(apiRouteGroup *gin.RouterGroup) error {
 	return nil
 }
 
-//NewAppServer returns AppServer
+// NewAppServer returns AppServer
 func NewAppServer() (*AppServer, error) {
 	router := gin.Default()
 
 	//Application configuration
 	config.Load()
 
-	//Middleware
-	router.Use(cors.Default())
+	// CORS configuration
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{
+		config.AppConfig.FrontendURL,
+		config.AppConfig.FrontendURL + "/",
+	}
+	corsConfig.AllowCredentials = true
+
+	// Middleware
+	router.Use(
+		cors.New(corsConfig),
+	)
 
 	apiRouteGroup := router.Group("/api")
 
@@ -49,10 +59,10 @@ func NewAppServer() (*AppServer, error) {
 		return nil, err
 	}
 
-	//Opentracing configuration
+	// Opentracing configuration
 	traceCloser := tracer.Init()
 
-	//Swagger Configuration
+	// Swagger Configuration
 	router.GET("/swagger/*any", ginSwagger.DisablingWrapHandler(swaggerFiles.Handler, ""))
 
 	return &AppServer{

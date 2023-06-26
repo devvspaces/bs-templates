@@ -5,12 +5,13 @@
 This repository is a todo sample go and angular web project built according to Clean Architecture.  
 
 ## Technologies
+
 * Go Web Framework ([gin-gonic](https://github.com/gin-gonic/gin))
 * Containerize ([docker](https://www.docker.com/))
 * Swagger ([swaggo](https://github.com/swaggo/swag))
 * Database
-    * [MongoDB](https://www.mongodb.com/) (default)
-    * [Redis](https://redis.io/)
+  * [MongoDB](https://www.mongodb.com/) (default)
+  * [Redis](https://redis.io/)
 * Dependency Injection ([google wire](https://github.com/google/wire))
 * Unit/Integration Tests ([testify](https://github.com/stretchr/testify))
 * Tracing ([opentracing](https://github.com/opentracing/opentracing-go))
@@ -19,35 +20,41 @@ This repository is a todo sample go and angular web project built according to C
 * WebUI ([Angular 11](https://angular.io/))
 
 ### Web UI Preview
+
 ![GitHub Logo](https://github.com/mecitsemerci/blog/blob/master/src/images/angular_ui.gif?raw=true)
 
 ### Open API Doc Preview
-![GitHub Logo](https://github.com/mecitsemerci/blog/blob/master/src/images/swagger_ui.jpg?raw=true)
 
+![GitHub Logo](https://github.com/mecitsemerci/blog/blob/master/src/images/swagger_ui.jpg?raw=true)
 
 ## Layers and Dependencies
 
 ### `cmd` (application run)
+
 Main application executive folder. Don't put a lot of code in the application directory.
 The directory name for each application should match the name of the executable you want to have (e.g., /cmd/myapp).
 It's common to have a small main function that imports and invokes the code from the /internal and /pkg directories and nothing else.
 
 ### `internal` (application codes)
+
 Private application and library code. This is the code you don't want others importing in their applications or libraries.
-* **core** includes application core files (domain objects, interfaces). It has no dependencies on another layer. 
+
+* **core** includes application core files (domain objects, interfaces). It has no dependencies on another layer.
 * **pkg** includes external dependencies files and implementation of core interfaces.
 
 ### `test` (integration tests)
+
 Application integration test folder.
 
 ### `web` (web ui)
+
 Web application specific components: static web assets, server side templates and SPAs.
 
 ### `docs` (openapi docs)
-open api (swagger) docs files. Swaggo generates automatically. 
+
+open api (swagger) docs files. Swaggo generates automatically.
 
     swag init -g ./cmd/api/main.go -o ./docs
-
 
 ## Usage
 
@@ -63,10 +70,9 @@ This command builds all docker services so if it's ok check that application url
 
 Application | URL | Purpose
 ------------ | -------------| -------------
-Angular UI | http://localhost:5000 | Todo APP Project
-Swagger UI | http://localhost:8080/swagger/index.html | Todo API OpenAPI Docs
-Jaeger UI | http://localhost:16686 | Opentracing Dashboard
-
+Angular UI | <http://localhost:5000> | Todo APP Project
+Swagger UI | <http://localhost:8080/swagger/index.html> | Todo API OpenAPI Docs
+Jaeger UI | <http://localhost:16686> | Opentracing Dashboard
 
 By the way the application supports redis, if you use redis run that command
 
@@ -75,8 +81,11 @@ By the way the application supports redis, if you use redis run that command
 This command builds docker services so if it's ok check same application urls.
 
 ## Local Development
-  ### Configuration
-  The application uses environment variables. Environment variable names and values as follows by default. 
+
+### Configuration
+
+  The application uses environment variables. Environment variable names and values as follows by default.
+
   ```
     # MONGO
     MONGO_URL=mongodb://127.0.0.1:27017
@@ -99,10 +108,10 @@ This command builds docker services so if it's ok check same application urls.
     JAEGER_DISABLED=false
   ```  
 
-  ### Dependency Injection
+### Dependency Injection
 
-  The project uses google wire for compile time dependency injection. The project is set for **MongoDB** by default. 
-  Docker compose files generates automatically **wire_gen.go** in containers but, it must be created manually for local development. 
+  The project uses google wire for compile time dependency injection. The project is set for **MongoDB** by default.
+  Docker compose files generates automatically **wire_gen.go** in containers but, it must be created manually for local development.
   
   Wire dependency file is `/internal/wired/wire_gen.go`
   
@@ -130,15 +139,16 @@ This command builds docker services so if it's ok check same application urls.
 
     make wire-mongo
   
-  All changes can be observed in `/internal/wired/wire_gen.go` 
+  All changes can be observed in `/internal/wired/wire_gen.go`
   
-  ### Swagger
+### Swagger
   
   The command that generates the open api document to `/docs` folder.
 
     make swag
 
-  ### Tests
+### Tests
+
   Existing tests are for demonstration purposes only
 
   Unit Test run command  
@@ -148,3 +158,13 @@ This command builds docker services so if it's ok check same application urls.
   Integration Test run command
   
     make integration-test
+
+### ENV URLs
+
+    setup-env:
+        export BACKEND_URL="http://localhost:8080"
+        export FRONTEND_URL="http://localhost:5000"
+
+    clean-env:
+        unset BACKEND_URL
+        unset FRONTEND_URL

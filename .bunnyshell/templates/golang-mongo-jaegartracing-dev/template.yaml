@@ -1,0 +1,15 @@
+name: Golang + MongoDB + Jaegertracing + Swagger
+description: This is a boilerplate for creating a new environment using Golang, MongoDB, and Jaegertracing. It contains a basic CRUD example to demonstrate how components connect and make it easy to start with.
+tags: [ golang, angular, typescript, mongodb, jaegertracing, opentracing, swagger ]
+icons: [ nodejs, express, angular, typescript, mongodb, swagger]
+stack:
+  packages:
+    - name: Golang
+      version: '1.16'
+    - name: MongoDB
+      version: '3'
+    - name: Angular
+      version: '11.2.3'
+    - name: Typescript
+      version: '4.1.2'
+discoverable: true
