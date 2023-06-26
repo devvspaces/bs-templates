@@ -14,7 +14,7 @@ components:
                 dockerfile: Dockerfile
                 target: dev
             environment:
-                FRONTEND_URL: 'http://localhost:5000'
+                FRONTEND_URL: 'https://{{ components.web.ingress.hosts[0] }}'
                 GIN_MODE: debug
                 JAEGER_AGENT_HOST: jaeger
                 JAEGER_AGENT_PORT: '6831'
@@ -48,11 +48,11 @@ components:
                 path: /
                 servicePort: 6831
             -
-                hostname: 'jaeger-{{ env.base_domain }}'
+                hostname: 'jaeger-query-{{ env.base_domain }}'
                 path: /
                 servicePort: 16686
             -
-                hostname: 'jaeger-{{ env.base_domain }}'
+                hostname: 'jaeger-collector-{{ env.base_domain }}'
                 path: /
                 servicePort: 5775
     -
@@ -78,8 +78,20 @@ components:
                 context: ./app/web
                 dockerfile: Dockerfile
                 target: dev
+            deploy:
+                resources:
+                    limits:
+                        memory: 1G
+                    reservations:
+                        memory: 1G
+            labels:
+                kompose.service.healthcheck.readiness.test: 'CMD sh -c "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080 || exit 1"'
+                kompose.service.healthcheck.readiness.interval: 15s
+                kompose.service.healthcheck.readiness.timeout: 10s
+                kompose.service.healthcheck.readiness.retries: 10
+                kompose.service.healthcheck.readiness.start_period: 120s
             environment:
-                API_URL: 'http://localhost:3080'
+                API_URL: 'https://{{ components.api.ingress.hosts[0] }}'
             ports:
                 - '8080:8080'
         hosts:
