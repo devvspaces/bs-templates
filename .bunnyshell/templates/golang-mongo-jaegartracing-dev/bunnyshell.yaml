@@ -1,69 +1,94 @@
-version: v1
 kind: Environment
-name: my-env
-type: primary | ephemeral
-deployment:
-  strategy:
-    type: RollingUpdate
-    maxUnavailable: 2 # optional, the default value is 25%
-    maxSurge: 50% # optional, the default value is 25%
+name: golang-mongo-jaeger-todo-app-staging
+type: primary
 components:
-  - kind: Service
-    version: v1
-    name: nginx
-    gitRepo: git@...
-    gitBranch: master
-    gitApplicationPath: / # optional; for monorepo apps
-    gitDockerComposePath: / # the path of the docker-compose.yaml inside the git_repo
-    dockerCompose:
-      build:
-        context: .docker/nginx
-        dockerfile: Dockerfile
-        args:
-          buildno: 1
-    hosts: # you can add more
-      - hostname: app # will be suffixed with -${env_unique}.bunnyenv.com
-        path: / # optional
-        servicePort: 8080
-        public: true # will be publicly available, even if the user IP does not exist in security.allowedIps
-
-  - kind: Database
-    name: mysql
-    gitRepo: git@...
-    gitBranch: master
-    gitApplicationPath: / # optional; for monorepo apps
-    gitDockerComposePath: / # the path of the docker-compose.yaml inside the git_repo
-    dockerCompose:
-      build:
-        context: .docker/mysql
-        dockerfile: Dockerfile
-        args:
-          buildno: 1
-    volumes:
-      -
-        name: db-data
-        mount: /var/lib/mysql
-        subPath: ''
-    hosts:
+    -
+        kind: Application
+        name: api
+        gitRepo: 'https://github.com/devvspaces/bs-templates.git'
+        gitBranch: golang-mongo-jaegertracing
+        gitApplicationPath: app
+        dockerCompose:
+            build:
+                context: ./app
+                dockerfile: Dockerfile
+                target: dev
+            environment:
+                FRONTEND_URL: 'http://localhost:5000'
+                GIN_MODE: debug
+                JAEGER_AGENT_HOST: jaeger
+                JAEGER_AGENT_PORT: '6831'
+                JAEGER_SAMPLER_PARAM: '1'
+                JAEGER_SAMPLER_TYPE: probabilistic
+                JAEGER_SERVICE_NAME: go-todo-app
+                MONGO_CONNECTION_TIMEOUT: '20'
+                MONGO_MAX_POOL_SIZE: '10'
+                MONGO_TODO_DB: TodoDb
+                MONGO_URL: 'mongodb://mongo:27017'
+            ports:
+                - '3080:8080'
+            restart: unless-stopped
+        hosts:
+            -
+                hostname: 'api-{{ env.base_domain }}'
+                path: /
+                servicePort: 3080
+    -
+        kind: Service
+        name: jaeger
+        dockerCompose:
+            image: 'jaegertracing/all-in-one:latest'
+            ports:
+                - '6831:6831'
+                - '5775:5775'
+                - '16686:16686'
+        hosts:
+            -
+                hostname: 'jaeger-{{ env.base_domain }}'
+                path: /
+                servicePort: 6831
+            -
+                hostname: 'jaeger-{{ env.base_domain }}'
+                path: /
+                servicePort: 16686
+            -
+                hostname: 'jaeger-{{ env.base_domain }}'
+                path: /
+                servicePort: 5775
+    -
+        kind: Database
+        name: mongo
+        dockerCompose:
+            image: 'mongo:3'
+            ports:
+                - '27017:27017'
+        volumes:
+            -
+                name: mongo-data
+                mount: /data/db
+                subPath: ''
+    -
+        kind: Application
+        name: web
+        gitRepo: 'https://github.com/devvspaces/bs-templates.git'
+        gitBranch: golang-mongo-jaegertracing
+        gitApplicationPath: app/web
+        dockerCompose:
+            build:
+                context: ./app/web
+                dockerfile: Dockerfile
+                target: dev
+            environment:
+                API_URL: 'http://localhost:3080'
+            ports:
+                - '8080:8080'
+        hosts:
+            -
+                hostname: 'web-{{ env.base_domain }}'
+                path: /
+                servicePort: 8080
 volumes:
-  - name: db-data
-    size: 1Gi
-    type: disk
-dev:
-  nginx:
-    - containers:
-        nginx:
-          command: ['nginx']
-          syncPaths:
-            - remotePath: /var/www/
-              localPath: ~/project
-          portForwards:
-            - "8080<8080"
-          environment:
-            WHEN_IN_DEV: '{{ env.vars.OTHER_VAR }}'
-          resources:
-              limits:
-                  memory: 750M
-              requests:
-                  cpu: '0.15'
-                  memory: 500M
+    -
+        name: mongo-data
+        size: 1Gi
+        type: disk
