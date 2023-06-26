@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mecitsemerci/go-todo-app/internal/config"
@@ -43,8 +45,7 @@ func NewAppServer() (*AppServer, error) {
 	// CORS configuration
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{
-		config.AppConfig.FrontendURL,
-		config.AppConfig.FrontendURL + "/",
+		strings.Trim(config.AppConfig.FrontendURL, "/"),
 	}
 	corsConfig.AllowCredentials = true
 
