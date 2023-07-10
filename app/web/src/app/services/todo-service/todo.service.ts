@@ -1,59 +1,63 @@
-import { Injectable, ErrorHandler } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import {
-  Todo,
-  CreateTodo,
-  CreateTodoResult,
-  UpdateTodo,
+    Todo,
+    CreateTodo,
+    CreateTodoResult,
+    UpdateTodo,
 } from '../../models/todo';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class TodoService {
-  headers = { 'content-type': 'application/json' };
+    headers = { 'content-type': 'application/json' };
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-  getTodos(): Observable<Todo[]> {
-    return this.http.get<Todo[]>(`${environment.apiURL}/api/v1/todo`);
-  }
+    buildUrl(url: string): string {
+        let url1 = environment.apiURL;
+        return `${url1.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
+    }
 
-  addTodo(todo: CreateTodo): Observable<CreateTodoResult> {
-    return this.http.post<CreateTodoResult>(
-      `${environment.apiURL}/api/v1/todo`,
-      JSON.stringify(todo),
-      {
-        headers: this.headers,
-      }
-    );
-  }
+    getTodos(): Observable<Todo[]> {
+        return this.http.get<Todo[]>(this.buildUrl('/api/v1/todo'));
+    }
 
-  updateTodo(todoID: string, todo: UpdateTodo): Observable<any> {
-    return this.http.put<any>(
-      `${environment.apiURL}/api/v1/todo/${todoID}`,
-      JSON.stringify(todo),
-      {
-        headers: this.headers,
-      }
-    );
-  }
+    addTodo(todo: CreateTodo): Observable<CreateTodoResult> {
+        return this.http.post<CreateTodoResult>(
+            this.buildUrl('/api/v1/todo'),
+            JSON.stringify(todo),
+            {
+                headers: this.headers,
+            }
+        );
+    }
 
-  deleteTodo(todoID: string): Observable<any> {
-    return this.http.delete<any>(
-      `${environment.apiURL}/api/v1/todo/${todoID}`,
-      {
-        headers: this.headers,
-      }
-    );
-  }
+    updateTodo(todoID: string, todo: UpdateTodo): Observable<any> {
+        return this.http.put<any>(
+            this.buildUrl(`/api/v1/todo/${todoID}`),
+            JSON.stringify(todo),
+            {
+                headers: this.headers,
+            }
+        );
+    }
 
-  getTodo(todoID: string): Observable<Todo> {
-    return this.http.get<Todo>(`${environment.apiURL}/api/v1/todo/${todoID}`, {
-      headers: this.headers,
-    });
-  }
+    deleteTodo(todoID: string): Observable<any> {
+        return this.http.delete<any>(
+            this.buildUrl(`/api/v1/todo/${todoID}`),
+            {
+                headers: this.headers,
+            }
+        );
+    }
+
+    getTodo(todoID: string): Observable<Todo> {
+        return this.http.get<Todo>(this.buildUrl(`/api/v1/todo/${todoID}`), {
+            headers: this.headers,
+        });
+    }
 }
